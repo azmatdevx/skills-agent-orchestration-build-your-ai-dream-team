@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A contributor-friendly overview of project status, ownership, activity, and priority.">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+      const state = document.querySelector(".dashboard-state");
+      const projectGrid = document.querySelector(".project-grid");
+
+      function showState(message, { error = false, retry = false } = {}) {
+        state.replaceChildren();
+        state.hidden = false;
+        state.classList.toggle("dashboard-state--error", error);
+        state.append(document.createTextNode(message));
+
+        if (retry) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = "Try again";
+          button.addEventListener("click", loadProjects);
+          state.append(document.createTextNode(" "));
+          state.append(button);
+        }
+      }
+
+      function textValue(value) {
+        return typeof value === "string" && value.trim() ? value.trim() : "Not provided";
+      }
+
+      function badge(className, label) {
+        const element = document.createElement("span");
+        element.className = className;
+        element.dataset[className === "status-badge" ? "status" : "priority"] =
+          label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+        element.textContent = label;
+        return element;
+      }
+
+      function createProjectCard(project) {
+        const card = document.createElement("article");
+        card.className = "project-card";
+        card.setAttribute("role", "listitem");
+
+        const topline = document.createElement("div");
+        topline.className = "project-card__topline";
+        const status = textValue(project.status);
+        const priority = textValue(project.priority);
+        topline.append(badge("status-badge", status), badge("priority-badge", priority));
+
+        const title = document.createElement("h3");
+        title.className = "project-card__title";
+        title.textContent = textValue(project.name);
+
+        const owner = document.createElement("p");
+        owner.className = "project-card__owner";
+        owner.textContent = `Owner: ${textValue(project.owner)}`;
+
+        const summary = document.createElement("p");
+        summary.className = "project-card__summary";
+        summary.textContent = textValue(project.summary);
+
+        const activity = document.createElement("p");
+        activity.className = "project-card__activity";
+        activity.textContent = `Recent activity: ${textValue(project.recentActivity)}`;
+
+        card.append(topline, title, owner, summary, activity);
+        return card;
+      }
+
+      async function loadProjects() {
+        showState("Loading projects…");
+        projectGrid.replaceChildren();
+
+        try {
+          const response = await fetch("project-data.json");
+          if (!response.ok) {
+            throw new Error(`Project data request failed (${response.status}).`);
+          }
+
+          const data = await response.json();
+          if (!data || !Array.isArray(data.projects)) {
+            throw new Error("Project data must contain a projects array.");
+          }
+
+          if (data.projects.length === 0) {
+            showState("No projects yet. Check back when a project has been added.");
+            return;
+          }
+
+          const cards = data.projects.map(createProjectCard);
+          projectGrid.replaceChildren(...cards);
+          state.hidden = true;
+        } catch (error) {
+          console.error("Failed to load project data:", error);
+          showState("We couldn’t load project data. Check your connection and try again.", {
+            error: true,
+            retry: true
+          });
+        }
+      }
+
+      loadProjects();
+      });
+    </script>
+  </head>
+  <body>
+    <main class="dashboard">
+      <header class="dashboard-header">
+        <p class="dashboard-header__eyebrow">Team workspace</p>
+        <h1>Project Pulse</h1>
+        <p>A quick, contributor-friendly view of what’s moving and where help is needed.</p>
+      </header>
+
+      <section aria-labelledby="projects-heading">
+        <h2 id="projects-heading">Projects</h2>
+        <p class="dashboard-state" role="status" aria-live="polite">Loading projects…</p>
+        <div class="project-grid" role="list" aria-label="Project overview"></div>
+      </section>
+    </main>
+  </body>
+</html>

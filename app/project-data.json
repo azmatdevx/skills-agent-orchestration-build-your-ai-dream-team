@@ -1,0 +1,28 @@
+{
+  "projects": [
+    {
+      "name": "Community Docs Refresh",
+      "owner": "Mona",
+      "status": "In progress",
+      "recentActivity": "Contributor guide outline updated yesterday",
+      "priority": "High",
+      "summary": "Help make the getting-started path clearer for first-time contributors."
+    },
+    {
+      "name": "Accessibility Checkup",
+      "owner": "Alex",
+      "status": "Needs review",
+      "recentActivity": "Keyboard navigation fixes are ready for feedback",
+      "priority": "Medium",
+      "summary": "Review key journeys and flag improvements that make the app easier for everyone to use."
+    },
+    {
+      "name": "Release Notes Helper",
+      "owner": "Jordan",
+      "status": "Planning",
+      "recentActivity": "Initial issue list drafted this week",
+      "priority": "Low",
+      "summary": "Shape a lightweight workflow for collecting clear release notes from contributions."
+    }
+  ]
+}
